@@ -1,0 +1,47 @@
+function onOpen() {
+    var ui = SpreadsheetApp.getUi(); 
+    var menuCount = 0; 
+    var menu = ui.createMenu('Joka Reports');
+    var menuItemArray = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MiMenu').getDataRange().      getValues();  
+    for (menuCount=1;menuCount <= menuItemArray.length;menuCount++) {
+      let id = menuCount;
+      let funName = "dynamicFun" + id;
+      menu.addItem(menuItemArray[menuCount][0], funName)
+        menu.addToUi();
+    }   
+    menu.addToUi();
+}
+
+var menuItemArray = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MiMenu').getDataRange().      getValues();  
+for (menuCount=0;menuCount < menuItemArray.length;menuCount++) {
+  let id = menuCount;
+  let funName = "dynamicFun" + id;
+  this[funName] = function() { menuClick(menuItemArray[id][1]); };
+}   
+
+function menuClick(reportName) {
+  var currentCulture = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetLocale();
+  var myuserToken = ScriptApp.getIdentityToken();
+
+  openUrl('https://jokareport.eastus.cloudapp.azure.com/viewer?reportname=' + reportName + '&usertoken=' + myuserToken + '&currentCulture=' +       currentCulture);
+}
+
+function openUrl( url ){
+  var html = HtmlService.createHtmlOutput('<html><script>'
+  +'window.close = function(){window.setTimeout(function(){google.script.host.close()},9)};'
+  +'var a = document.createElement("a"); a.href="'+url+'"; a.target="_blank";'
+  +'if(document.createEvent){'
+  +'  var event=document.createEvent("MouseEvents");'
+  +'  if(navigator.userAgent.toLowerCase().indexOf("firefox")>-1){window.document.body.append(a)}'                          
+  +'  event.initEvent("click",true,true); a.dispatchEvent(event);'
+  +'}else{ a.click() }'
+  +'close();'
+  +'</script>'
+  // Offer URL as clickable link in case above code fails.
+  +'<body style="word-break:break-word;font-family:sans-serif;">Failed to open automatically. <a href="'+url+'" target="_blank" onclick="window.close()">Click here to proceed</a>.</body>'
+  +'<script>google.script.host.setHeight(40);google.script.host.setWidth(410)</script>'
+  +'</html>')
+  .setWidth( 90 ).setHeight( 1 );
+  SpreadsheetApp.getUi().showModalDialog( html, "Cargando ..." );
+}
+
